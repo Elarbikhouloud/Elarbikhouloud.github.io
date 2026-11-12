@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Khouloud Elarbi · Security Engineering Student</title>
+<meta name="description" content="Cybersecurity engineering student building SIEM, IDS, PAM and DevSecOps labs, with the steps and the problems I hit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+ --navy:#0a1a2e;--panel:#10263f;--panel-line:#25405e;
+ --amber:#ffb23e;--amber-deep:#a95f00;--cyan:#5fd6c8;--red:#ff6b5e;
+ --paper:#edf1f6;--white:#fff;--ink:#0f1e30;--muted:#516173;--line:#cfd8e3;
+ --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+ --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+ --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+ color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 var(--body)}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.08}
+h2{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:800;letter-spacing:-.025em;margin-bottom:12px}
+h3{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+p{margin:0 0 1em}
+.sub{color:var(--muted);max-width:38em;margin-bottom:32px}
+
+/* nav */
+.bar{position:sticky;top:0;z-index:10;background:var(--navy);border-bottom:1px solid var(--panel-line)}
+.bar .wrap{display:flex;justify-content:space-between;align-items:center;gap:8px 24px;flex-wrap:wrap;padding-top:13px;padding-bottom:13px}
+.bar strong{font:800 1.1rem var(--display);color:var(--white);letter-spacing:-.01em}
+.bar nav a{color:#b8c7d9;text-decoration:none;margin-left:22px;font:500 .95rem var(--body)}
+.bar nav a:hover{color:var(--amber)}
+
+/* hero */
+.hero{background:var(--navy);color:var(--white);padding:76px 0 84px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(2.5rem,5.6vw,4.4rem);font-weight:800;letter-spacing:-.04em}
+.hero .lead{font-size:1.15rem;color:#b8c7d9;max-width:30em;margin:22px 0 32px}
+.btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;font:600 1rem var(--body);padding:12px 22px;border-radius:4px;text-decoration:none;background:var(--amber);color:#1a1100}
+.btn:hover{background:#ffc566}
+.btn.ghost{background:transparent;color:var(--white);border:1px solid #4a6485}
+.btn.ghost:hover{border-color:var(--amber);color:var(--amber)}
+
+/* console: the one memorable element */
+.console{background:var(--panel);border:1px solid var(--panel-line);border-radius:8px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.console header{display:flex;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid var(--panel-line);font:500 .8rem var(--mono);color:#8fa5bf}
+.console header i{font-style:normal;color:var(--cyan)}
+.feed{list-style:none;margin:0;padding:10px 0;font:400 .84rem/1.5 var(--mono);min-height:15.5em}
+.feed li{display:grid;grid-template-columns:4.7em 3em 1fr;gap:10px;padding:8px 16px;color:#d6e2f0}
+.feed time{color:#7f95b0}
+.feed b{font-weight:500}
+.feed .l3 b{color:var(--cyan)}
+.feed .l8 b{color:var(--amber)}
+.feed .l10 b,.feed .l12 b{color:var(--red)}
+.feed .l10,.feed .l12{background:rgba(255,107,94,.09)}
+.feed .sent{color:var(--cyan)}
+.js .feed li{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.js .feed li.on{opacity:1;transform:none}
+.console footer{padding:10px 16px;border-top:1px solid var(--panel-line);font:.78rem var(--mono);color:#7f95b0}
+
+/* pipeline */
+.pipe{background:var(--white);border-bottom:1px solid var(--line);padding:52px 0 56px}
+.pipe h2{font-size:1.6rem}
+.nodes{list-style:none;margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.nodes li{position:relative;padding:0 22px 0 0}
+.nodes li::before{content:"";position:absolute;top:13px;left:30px;right:0;height:2px;background:var(--line)}
+.nodes li:last-child::before{display:none}
+.dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--navy);color:var(--white);font:500 .8rem var(--mono);margin-bottom:12px}
+.nodes li:last-child .dot{background:var(--amber);color:#1a1100}
+.nodes b{display:block;font:700 1rem var(--display)}
+.nodes code{display:inline-block;font:.8rem var(--mono);background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:0 7px;margin:4px 0 6px}
+.nodes span.d{display:block;font-size:.92rem;line-height:1.5;color:var(--muted)}
+
+section{padding:84px 0 0}
+
+/* about */
+.about{display:grid;grid-template-columns:1.2fr 1fr;gap:56px}
+.stack{display:grid;gap:14px;align-content:start}
+.stack>div{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.stack h3{font-size:1rem;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font:.8rem var(--mono);padding:2px 9px;background:var(--paper);border:1px solid var(--line);border-radius:3px}
+
+/* projects */
+.filters{display:flex;gap:8px;margin:0 0 20px}
+.filters button{font:600 .92rem var(--body);padding:7px 16px;border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid li{background:var(--white);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:6px;padding:20px 22px;display:flex;flex-direction:column}
+.grid li[hidden]{display:none}
+.grid li.feat{grid-column:1/-1;border-top-color:var(--amber);background:linear-gradient(90deg,#fff 70%,#fff6e6)}
+.grid li.wip{border-top-color:var(--line);background:transparent;border-style:dashed}
+.grid h3{margin-bottom:6px}
+.grid p{color:var(--muted);margin:0 0 14px;font-size:.98rem}
+.grid .chips{margin-top:auto}
+.status{font:600 .78rem var(--body);color:var(--amber-deep);margin-bottom:6px}
+
+/* writeup */
+.post-layout{display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start}
+.toc{position:sticky;top:88px;display:grid;gap:2px;font-size:.92rem}
+.toc a{text-decoration:none;color:var(--muted);padding:5px 0 5px 12px;border-left:2px solid var(--line)}
+.toc a:hover{color:var(--ink);border-left-color:var(--amber)}
+article{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:36px 40px;max-width:760px}
+article .meta{font:.85rem var(--mono);color:var(--muted);margin-bottom:10px}
+article h2{font-size:clamp(1.7rem,3.4vw,2.2rem)}
+article h3{margin:34px 0 10px;font-size:1.2rem}
+article ol{padding-left:1.3em;margin:0}
+article li{margin-bottom:6px}
+.pair{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;margin:12px 0;overflow:hidden}
+.pair div{padding:14px 18px}
+.pair .bad{background:#fff1ef;border-right:1px solid var(--line)}
+.pair .good{background:#effaf8}
+.pair small{display:block;font:600 .78rem var(--body);margin-bottom:4px}
+.pair .bad small{color:#b3382c}
+.pair .good small{color:#17766b}
+.pair p{margin:0;font-size:.98rem}
+.soon{color:var(--muted);margin-top:20px}
+
+/* contact */
+.contact{background:var(--navy);color:var(--white);margin-top:96px;padding:64px 0}
+.contact h2{color:var(--white)}
+.contact p{color:#b8c7d9}
+.links{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.links a{font:600 1rem var(--body);text-decoration:none;padding:11px 20px;border:1px solid #4a6485;border-radius:4px}
+.links a:first-child{background:var(--amber);border-color:var(--amber);color:#1a1100}
+.links a:hover{border-color:var(--amber)}
+.links a:first-child:hover{background:#ffc566}
+footer.end{background:#06111f;color:#7f95b0;font-size:.9rem;padding:20px 0}
+
+@media(max-width:860px){
+ .hero .wrap{grid-template-columns:1fr;gap:40px}
+ .about{grid-template-columns:1fr;gap:28px}
+ .nodes{grid-template-columns:1fr}
+ .nodes li{padding:0 0 22px 44px}
+ .nodes li::before{top:28px;bottom:0;left:13px;right:auto;width:2px;height:auto}
+ .dot{position:absolute;left:0;top:0;margin:0}
+ .grid{grid-template-columns:1fr}
+ .post-layout{grid-template-columns:1fr}
+ .toc{display:none}
+ article{padding:26px 20px}
+ .pair{grid-template-columns:1fr}
+ .pair .bad{border-right:0;border-bottom:1px solid var(--line)}
+ .feed li{grid-template-columns:4.2em 2.6em 1fr;gap:8px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.js .feed li{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+ <div class="wrap">
+  <strong>Khouloud Elarbi</strong>
+  <nav aria-label="Main">
+   <a href="#about">About</a><a href="#projects">Projects</a><a href="#writeups">Writeups</a><a href="#contact">Contact</a>
+  </nav>
+ </div>
+</header>
+
+<div class="hero">
+ <div class="wrap">
+  <div>
+   <h1>I build security monitoring, then I try to break it.</h1>
+   <p class="lead">Cybersecurity engineering student working on SIEM, intrusion detection, privileged access and DevSecOps. Each writeup shows the steps I followed and the problems I had to fix.</p>
+   <div class="btns">
+    <a class="btn" href="#writeups">Read the writeups</a>
+    <a class="btn ghost" href="#projects">See my projects</a>
+   </div>
+  </div>
+
+  <div class="console" role="img" aria-label="Example alert feed from my insider threat lab, using simulated data">
+   <header><span>wazuh-manager · alerts.log</span><i>lab data</i></header>
+   <ol class="feed" id="feed">
+    <li class="l3"><time>14:02:11</time><b>L3</b><span>Agent 001 connected</span></li>
+    <li class="l8"><time>14:02:47</time><b>L8</b><span>After-hours logon on Windows-Employee</span></li>
+    <li class="l10"><time>14:03:05</time><b>L10</b><span>Massive file access in shared folder (rule 100001)</span></li>
+    <li class="l12"><time>14:03:06</time><b>L12</b><span>Unauthorized FTP/SCP transfer (rule 100003)</span></li>
+    <li class="sent"><time>14:03:07</time><b></b><span>Alert sent to Telegram</span></li>
+   </ol>
+   <footer>Simulated events from my insider threat lab</footer>
+  </div>
+ </div>
+</div>
+
+<div class="pipe">
+ <div class="wrap">
+  <h2>How the lab catches a bulk file copy</h2>
+  <p class="sub">A simulated employee copies sensitive files. Five steps later, the alert is on my phone.</p>
+  <ol class="nodes">
+   <li><span class="dot">1</span><b>User action</b><code>copy 50+ files</code><span class="d">The employee copies the sensitive folder.</span></li>
+   <li><span class="dot">2</span><b>Telemetry</b><code>Sysmon, Auditd</code><span class="d">File events are recorded on Windows and Linux.</span></li>
+   <li><span class="dot">3</span><b>Correlation</b><code>Wazuh rule 100001</code><span class="d">A custom rule flags the massive access.</span></li>
+   <li><span class="dot">4</span><b>Detection</b><code>level 10 alert</code><span class="d">The alert shows in the SIEM dashboard.</span></li>
+   <li><span class="dot">5</span><b>Notification</b><code>Telegram bot</code><span class="d">A Python script sends it within seconds.</span></li>
+  </ol>
+ </div>
+</div>
+
+<main class="wrap">
+
+<section id="about">
+ <div class="about">
+  <div>
+   <h2>About</h2>
+   <p>I’m a third-year engineering student in information systems and network security at TEK-UP University in Tunisia, currently on exchange at Philipps-Universität Marburg in Germany.</p>
+   <p>I like projects where I build a working environment, attack it, and check that my detection actually catches something. When something breaks, I write it down.</p>
+  </div>
+  <div class="stack">
+   <div><h3>Detect</h3><div class="chips"><span>Wazuh</span><span>Suricata</span><span>Sysmon</span><span>Auditd</span><span>ELK</span></div></div>
+   <div><h3>Control access</h3><div class="chips"><span>Keycloak</span><span>Guacamole</span><span>Vault</span><span>pfSense</span></div></div>
+   <div><h3>Manage and build</h3><div class="chips"><span>GLPI</span><span>Docker</span><span>Python</span></div></div>
+  </div>
+ </div>
+</section>
+
+<section id="projects">
+ <h2>Projects</h2>
+ <p class="sub">One internship project and the labs I built to practice detection, access control and defense.</p>
+ <div class="filters" role="group" aria-label="Filter projects">
+  <button type="button" data-f="all" aria-pressed="true">All</button>
+  <button type="button" data-f="internship" aria-pressed="false">Internship</button>
+  <button type="button" data-f="lab" aria-pressed="false">Labs</button>
+ </div>
+ <ul class="grid" id="list">
+  <li class="feat" data-k="internship"><div class="status">Internship, full writeup below</div><h3>GLPI asset inventory with Wazuh monitoring</h3><p>Replaced scattered Excel sheets with an automatic inventory of workstations and network devices, and prepared Wazuh agents for security monitoring.</p><div class="chips"><span>GLPI</span><span>SNMP</span><span>Wazuh</span><span>MySQL</span></div></li>
+  <li data-k="lab"><h3>Insider threat detection</h3><p>Custom Wazuh rules and a Python watcher that sends Telegram alerts when files are copied in bulk or accessed after hours.</p><div class="chips"><span>Sysmon</span><span>Auditd</span><span>Wazuh</span><span>Python</span></div></li>
+  <li data-k="lab"><h3>Privileged access management</h3><p>Single sign-on, recorded SSH and RDP sessions, a secrets vault and centralized logs, behind a firewall with three VLANs.</p><div class="chips"><span>Keycloak</span><span>Guacamole</span><span>Vault</span><span>ELK</span><span>pfSense</span></div></li>
+  <li data-k="lab"><h3>Multi-layer anti-DDoS</h3><p>Firewall rules, automatic banning, a web application firewall and an IDS working together across Kali and Ubuntu machines.</p><div class="chips"><span>iptables</span><span>Fail2Ban</span><span>ModSecurity</span><span>Suricata</span></div></li>
+  <li data-k="lab"><h3>DDoS detection with machine learning</h3><p>A Random Forest classifier trained on the KDD dataset, reaching about 99.7% accuracy on that dataset.</p><div class="chips"><span>Python</span><span>scikit-learn</span></div></li>
+  <li data-k="lab"><h3>Person detection for smart home security</h3><p>YOLOv8-based detection of people in camera footage.</p><div class="chips"><span>Python</span><span>YOLOv8</span></div></li>
+  <li class="wip" data-k="lab"><div class="status">Final-year project, in progress</div><h3>Intelligent open-source SOC</h3><p>I’ll publish this one after my graduation.</p></li>
+ </ul>
+</section>
+
+<section id="writeups">
+ <h2>Writeups</h2>
+ <p class="sub">Steps, mistakes and fixes, written as I’d want to read them.</p>
+ <div class="post-layout">
+  <nav class="toc" aria-label="In this writeup">
+   <a href="#w-context">Context</a><a href="#w-build">What I built</a><a href="#w-problems">Problems and fixes</a><a href="#w-result">Result</a><a href="#w-next">Next steps</a><a href="#w-learned">What I learned</a>
+  </nav>
+  <div>
+   <article>
+    <div class="meta">Internship project · GLPI, SNMP, Wazuh</div>
+    <h2>Replacing Excel inventories with GLPI, and getting ready for Wazuh</h2>
+
+    <h3 id="w-context">Context</h3>
+    <p>A document-management company tracked its computers and network devices in Excel files and on paper. Finding a device was slow, nobody knew which software was installed where, and security incidents were only noticed after the fact.</p>
+
+    <h3 id="w-build">What I built</h3>
+    <ol>
+     <li>Prepared a Windows machine with WampServer, which provides Apache, PHP and MySQL.</li>
+     <li>Installed GLPI with its web installer, changed every default password and deleted the install folder.</li>
+     <li>Modeled the company in GLPI: departments, buildings, offices and hardware categories.</li>
+     <li>Enabled SNMP on printers, scanners and other devices, then created a network discovery task.</li>
+     <li>Installed the GLPI agent on Windows workstations so hardware and software details report automatically.</li>
+     <li>Installed Wazuh agents on critical workstations, ready to send logs to a Wazuh manager.</li>
+    </ol>
+
+    <h3 id="w-problems">Problems and fixes</h3>
+    <div class="pair">
+     <div class="bad"><small>What went wrong</small><p><strong>Agent deployment through Active Directory didn’t work.</strong> Internal constraints blocked it.</p></div>
+     <div class="good"><small>What I did</small><p>Installed the agent on each workstation by hand. It took longer but gave full coverage without touching the domain setup.</p></div>
+    </div>
+    <div class="pair">
+     <div class="bad"><small>What went wrong</small><p><strong>Only one machine was powerful enough, and it was already in production.</strong> GLPI ran there, leaving no room for a Wazuh manager.</p></div>
+     <div class="good"><small>What I did</small><p>Installed the agents first, so monitoring can start as soon as a server is available.</p></div>
+    </div>
+    <div class="pair">
+     <div class="bad"><small>What went wrong</small><p><strong>Network devices stayed invisible</strong> until SNMP was configured on them.</p></div>
+     <div class="good"><small>What I did</small><p>Enabled and checked SNMP device by device, then ran the discovery task again.</p></div>
+    </div>
+
+    <h3 id="w-result">Result</h3>
+    <p>Printers, scanners, switches, Wi-Fi access points and NAS devices were discovered automatically, and workstations report their own inventory. The old Excel files are no longer needed.</p>
+
+    <h3 id="w-next">Next steps</h3>
+    <p>Add a dedicated server for the Wazuh manager, connect GLPI and Wazuh through the API so alerts create tickets, and back up the GLPI database regularly.</p>
+
+    <h3 id="w-learned">What I learned</h3>
+    <p>Automation plans often meet real-world limits. A manual fallback, and preparing the next step early, kept the project moving.</p>
+   </article>
+   <p class="soon">Next writeups: insider threat detection, privileged access management and anti-DDoS.</p>
+  </div>
+ </div>
+</section>
+</main>
+
+<section class="contact" id="contact">
+ <div class="wrap">
+  <h2>Contact</h2>
+  <p>I’m open to internships and junior security roles. Email or LinkedIn is the best way to reach me.</p>
+  <div class="links">
+   <a href="mailto:elarbikhouloud@gmail.com">Email me</a>
+   <a href="https://www.linkedin.com/in/khouloud-elarbi">LinkedIn</a>
+   <a href="https://github.com/Elarbikhouloud">GitHub</a>
+  </div>
+ </div>
+</section>
+
+<footer class="end"><div class="wrap">© 2026 Khouloud Elarbi. All labs ran in isolated test environments.</div></footer>
+
+<script>
+(function(){
+ var btns=document.querySelectorAll('.filters button');
+ var items=document.querySelectorAll('#list li');
+ btns.forEach(function(b){
+  b.addEventListener('click',function(){
+   var f=b.getAttribute('data-f');
+   btns.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+   items.forEach(function(li){li.hidden=(f!=='all'&&li.getAttribute('data-k')!==f)});
+  });
+ });
+ // Alert feed: reveal one line at a time, once, unless motion is reduced
+ var lines=document.querySelectorAll('#feed li');
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){return;}
+ document.documentElement.classList.add('js');
+ lines.forEach(function(li,i){setTimeout(function(){li.classList.add('on')},500+i*900)});
+})();
+</script>
+</body>
+</html>
